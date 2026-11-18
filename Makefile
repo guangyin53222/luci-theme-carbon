@@ -38,6 +38,13 @@ if [ "$${PKG_UPGRADE}" = 1 ] || [ "$$1" = upgrade ]; then exit 0; fi
 exit 0
 endef
 
+define Package/luci-theme-carbon/install
+	$(call Build/Install/Default)
+	$(RM) -f $(1)/usr/share/luci/menu.d/luci-theme-carbon-update.json
+	$(RM) -f $(1)/usr/lib/rpcd/luci.carbon_update
+	$(RM) -rf $(1)/usr/share/rpcd/acl.d/luci-theme-carbon-update*
+endef
+
 include $(TOPDIR)/feeds/luci/luci.mk
 
 # call BuildPackage - OpenWrt buildroot signature
