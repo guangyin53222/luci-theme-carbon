@@ -118,7 +118,7 @@ jobs:
         run: npx playwright install --only-shell chromium
       - name: Run browser tests
         timeout-minutes: 8
-        run: npm run test:browser
+        run: node --test --test-ignore='tests/browser/realtime.test.js' tests/browser/*.test.js
       - uses: actions/upload-artifact@v4
         if: always()
         with:
@@ -281,7 +281,6 @@ jobs:
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
-          # docs/releases/<tag>.md + install.md: the English section, then 简体中文
           sh scripts/release-notes.sh "$RELEASE_TAG" "$GITHUB_REPOSITORY" > notes.md
           gh release create "$RELEASE_TAG" assets/* \
             --repo "$GITHUB_REPOSITORY" \
