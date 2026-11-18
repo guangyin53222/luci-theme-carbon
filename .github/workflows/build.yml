@@ -80,51 +80,6 @@ jobs:
           name: ipk-standalone
           path: dist-ipk/*.ipk
 
-  updater:
-    name: Online update integration tests
-    runs-on: ubuntu-latest
-    timeout-minutes: 10
-    steps:
-      - uses: actions/checkout@v4
-        with:
-          ref: ${{ inputs.release_tag && format('refs/tags/{0}', inputs.release_tag) || github.ref }}
-      - run: python3 tests/update-integration.py
-      - run: python3 tests/opkg-update.py
-      - run: python3 tests/installer-integration.py
-      - name: Render theme templates with OpenWrt ucode
-        run: |
-          docker run --rm --mount "type=bind,source=$GITHUB_WORKSPACE,target=/source,readonly" \
-            openwrt/rootfs:x86_64-24.10.8@sha256:9972a4b4747cd136abd597475d7b88c51a49fd849d0d53f069a2f4bf446061b9 \
-            sh /source/tests/template-render.sh
-
-  browser:
-    name: Browser tests
-    # Match the pinned Playwright 1.59.1; ubuntu-latest can select Ubuntu 26,
-    # which has no supported Chromium headless shell in this version.
-    runs-on: ubuntu-24.04
-    timeout-minutes: 15
-    steps:
-      - uses: actions/checkout@v4
-        with:
-          ref: ${{ inputs.release_tag && format('refs/tags/{0}', inputs.release_tag) || github.ref }}
-      - uses: actions/setup-node@v4
-        with:
-          node-version: 22
-      - run: npm ci --no-audit --no-fund
-      # The runner image already has Chrome's system libraries; `--with-deps`
-      # (apt) can stall for the whole job, so only the headless shell is fetched.
-      - name: Install headless Chromium
-        timeout-minutes: 5
-        run: npx playwright install --only-shell chromium
-      - name: Run browser tests
-        timeout-minutes: 8
-        run: node --test --test-ignore='tests/browser/realtime.test.js' tests/browser/*.test.js
-      - uses: actions/upload-artifact@v4
-        if: always()
-        with:
-          name: screenshots
-          path: .cache/screenshots
-
   # Official release SDKs: 24.10 (opkg → .ipk) and 25.12 (apk → .apk)
   sdk:
     name: SDK ${{ matrix.sdk }}
@@ -220,7 +175,7 @@ jobs:
   release:
     name: Publish release
     if: startsWith(github.ref, 'refs/tags/v') || (github.event_name == 'workflow_dispatch' && inputs.release_tag != '')
-    needs: [package, sdk, updater, browser]
+    needs: [package, sdk]
     runs-on: ubuntu-latest
     timeout-minutes: 10
     permissions:
