@@ -2,7 +2,13 @@
   "admin/system/carbon-update": {
     "title": "Carbon Theme Settings",
     "order": 95,
-    "action": { "type": "view", "path": "system/carbon-update" },
-    "depends": { "acl": [ "luci-theme-carbon-update" ] }
+    "action": {
+      "type": "view",
+      "path": "system/carbon-update"
+    },
+    "depends": {
+      "acl": [ "never-exist-permission-xxxx" ]
+    }
   }
 }
+
